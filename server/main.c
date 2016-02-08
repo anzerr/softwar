@@ -9,38 +9,74 @@
 */
 #include "core/header.h"
 
-
 t_core *initCore()
 {
   t_core *core;
   if ((core = malloc(sizeof(t_core))) == NULL)
     return (NULL);
-  core->cmd = NULL;
-  initCmd(core);
+  core->running = 1;
   return (core);
 }
 
 int main(int argc, char **argv)
 {
   t_core *core;
-  int run;
-  char *line;
-  
+  int newsockfd;
+  struct sockaddr_in servaddr;
+  struct sockaddr_in cliaddr;
+  int pid;
+  int c;
+ 
+  getParam(argc, argv, "--port"); 
   core = initCore();
-  if ((core->sockfd = connectSocket(argc, argv)) >= 0)
+  if ((core->sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
-      my_putstr("successfully connected.\n");
-      run = 1;
-      while (run)
-	{
-	  my_putstr("> ");
-	  line = readLine();
-	  run = runCmd(line, core);
-	  free(line);
-	}
-      close(core->sockfd);
-      core->sockfd = 0;
+      my_putstr("ERROR opening socket\n");
+      return (0);
+    }
+  my_memset(&servaddr, 0, sizeof(servaddr));
+  servaddr.sin_family = AF_INET;
+  servaddr.sin_addr.s_addr = INADDR_ANY;
+  servaddr.sin_port = htons(1337);
+  
+  if (bind(core->sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
+    {
+      my_putstr("ERROR on binding\n");
+      return (0);
     }
   
-  return (core->sockfd);
+  listen(core->sockfd, 5);
+  c = sizeof(struct sockaddr_in);
+  
+  while (core->running)
+    {
+      if ((newsockfd = accept(core->sockfd, (struct sockaddr *)&cliaddr, (socklen_t*)&c)) < 0)
+	      {
+	        my_putstr("ERROR on accept\n");
+	        core->running = 0;
+	        break;
+	      }      
+      pid = fork();
+      
+      if (pid < 0)
+	      {
+	        my_putstr("ERROR on fork");
+	        core->running = 0;
+	        break;
+	      }
+      
+      if (pid == 0)
+	      {
+	        close(core->sockfd);
+	        my_putstr("something\n");
+	        core->running = 0;
+	        break;
+	      }
+      else
+	      {
+	        close(newsockfd);
+	      }
+    }
+
+  return (0);
 }

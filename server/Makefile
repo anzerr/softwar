@@ -1,12 +1,7 @@
 SRC =	main.c \
-	core/connection.c \
-	core/readline.c \
-	core/runcmd.c \
-	core/list.c \
-	core/cmp.c \
-	core/commands.c
+	core/util.c
 
-NAME =	fondation
+NAME =	softwars
 OBJO =	$(SRC:%.c=%.o)
 OBJC =	$(SRC)
 CFLAGS = -W -Werror -Wall
