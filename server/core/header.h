@@ -81,6 +81,8 @@ char **my_str_to_wordtab(char *str);
 int my_getnbr(char *str);
 char *my_strcat(char *str1, char *str2);
 
+char *my_nbrtostr(int n);
+
 void my_sort_list(t_list **begin, int (*cmp)());
 t_list *my_add_list(t_list **begin);
 void my_remove_list(t_list **begin, void *data_ref, int (*cmp)());
@@ -93,6 +95,8 @@ char *my_strcpy(char *dest, char *src);
 void my_memset(void *buff, int put, size_t size);
 char *getParam(int argc, char **argv, char *param);
 
+void sendAll(t_core *core, char *action, char *data);
+void sendAction(int socket, char *action, char *data);
 void *connectionHandler(void *arg);
 int cmpClientName(t_client *node, char *str);
 
@@ -107,4 +111,6 @@ void initGameCycle(t_core *core);
 int clientDisconnect(t_core *core, char *name);
 void *cycleRun(void *base);
 
+int my_numlen(int n);
+int my_pow(int n, int pow);
 #endif

@@ -48,6 +48,39 @@ t_client *initClient(t_core *core, int socket)
   return (NULL);
 }
 
+void sendAll(t_core *core, char *action, char *data)
+{
+  int i;
+  t_game *game;
+  
+  i = 0;
+  game = core->game;
+  while (i < game->maxPlayer)
+    {
+      if (game->players[i] != NULL)
+	sendAction((game->players[i])->socket, action, data);
+      i += 1;
+    }
+}
+
+void sendAction(int socket, char *action, char *data)
+{
+  int l;
+  char *send;
+
+  l = my_strlen(action) + my_strlen(data) + 3;
+  if ((send = malloc(sizeof(char) * l)) != NULL)
+    {
+      my_memset(send, '\0', l - 1);
+      my_strcat(send, action);
+      my_strcat(send, ";");
+      my_strcat(send, data);
+      my_strcat(send, ";\0");
+      write(socket, send, l - 1);
+      free(send);
+    }
+}
+
 void *connectionHandler(void *base)
 {
   t_clientSocket *arg;

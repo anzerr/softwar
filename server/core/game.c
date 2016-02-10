@@ -54,6 +54,7 @@ void runLobby(t_core *core)
 	}
       if (c == 4)
 	{
+	  sendAll(core, "startcountdown", "NULL");
 	  put(core, "found 4 player in lobby starting count down\n");
 	  game->countdown = core->countdown;
 	  game->stat = 1;
@@ -90,6 +91,7 @@ void startGame(t_core *core)
   t_list *node;
   int i;
   int c;
+  int last;
   
   game = core->game;
   if (game->stat == 1)
@@ -97,16 +99,26 @@ void startGame(t_core *core)
       put(core, "lobby countdown ");
       putnbr(core, game->countdown);
       put(core, "...\n");
+      sendAll(core, "countdown", my_nbrtostr(game->countdown));
       game->countdown += -1;
       if (game->countdown <= 0)
 	{
 	  put(core, "game is started\n");
+	  sendAll(core, "start", "NULL");
+	  i = 0;
+	  while (i < game->maxPlayer)
+	    {
+	      if ((client = game->players[i]) != NULL)
+		client->power = i * 5;
+	      i += 1;
+	    }
 	  game->stat = 2;
 	}
     }
   if (game->stat == 2)
     {
       i = (c = 0);
+      last = 0;
       while (i < game->maxPlayer)
 	{
 	  if ((client = game->players[i]) != NULL)
@@ -114,12 +126,12 @@ void startGame(t_core *core)
 	      c += 1;
 	      client->action = 2;
 	      client->power = client->power - core->powerDrain;
-	      put(core, client->name);
-	      putnbr(core, client->power);
-	      putnbr(core, core->powerDrain);
-	      put(core, "\n");
+	      sendAction(client->socket, "powerchange", my_nbrtostr(client->power));
 	      if (client->power <= 0)
 		{
+		  c += -1;
+		  sendAll(core, "dead", (game->players[i])->name);
+		  sendAction(client->socket, "lost", "NULL");
 		  game->players[i] = NULL;
 		  put(core, client->name);
 		  put(core, " has died put back into queue\n");
@@ -128,11 +140,26 @@ void startGame(t_core *core)
 		  node->data = client;
 		  my_add_list_to_list(&core->queue, node);
 		}
+	      else
+		last = i;
 	    }
 	  i += 1;
 	}
-      if (c == 0)
-	game->stat = 0;
+      if (c <= 1)
+	{
+	  game->stat = 0;
+	  if (c == 0 || game->players[last] == NULL)
+	    {
+	      sendAll(core, "draw", "NULL");
+	      put(core, "draw everyone died at the same time.\n");
+	    }
+	  else
+	    {
+	      sendAction((game->players[last])->socket, "win", (game->players[last])->name);
+	      put(core, (game->players[last])->name);
+	      put(core, " is the winner.\n");
+	    }
+	}
     }
 }
 
@@ -153,6 +180,7 @@ int clientDisconnect(t_core *core, char *name)
 	  game->players[i] = NULL;
 	  if (game->stat == 1)
 	    {
+	      sendAll(core, "countdownabort", "NULL");
 	      put(core, "game session has been aborted player left mid countdown\n");
 	      game->stat = 0;
 	    }

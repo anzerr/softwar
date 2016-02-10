@@ -85,11 +85,18 @@ void *my_find_list(t_list *begin, void *data_ref, int (*cmp)())
   return (NULL);
 }
 
-void my_add_list_to_list(t_list **begin1,t_list *begin2)
+void my_add_list_to_list(t_list **begin1, t_list *begin2)
 {
   t_list *list;
   list = *begin1;
-  while (list->next != NULL)
-    list = list->next;
-  list->next = begin2;
+  if (list == NULL)
+    {
+      *begin1 = begin2;
+    }
+  else
+    {
+      while (list->next != NULL)
+	list = list->next;
+      list->next = begin2;
+    }
 }
