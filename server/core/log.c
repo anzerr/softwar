@@ -38,6 +38,14 @@ int put(t_core *core, char *str)
     return (1);
 }
 
+int putnbr(t_core *core, int n)
+{
+  if (core->debug)
+    my_put_nbr(n);
+  return (0);
+}
+
+
 int error(t_core *core, char *str)
 {
   my_putstr(str);

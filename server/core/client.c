@@ -9,35 +9,85 @@
 */
 #include "header.h"
 
+int cmpClientName(t_client *node, char *str)
+{
+  return (my_strcmp(node->name, str));
+}
+
+char *clientName(t_core *core, t_client *client, int max)
+{
+  my_strcpy(client->name, "#0x00\0");
+  client->name[3] = 48 + (rand() % 9);
+  client->name[4] = 48 + (rand() % 9);
+  if (my_find_list(core->queue, client->name, &cmpClientName) != NULL && max > 0)
+    return (clientName(core, client, max - 1));
+  put(core, "set client name ");
+  put(core, client->name);
+  put(core, "\n");
+  return (client->name); 
+}
+
+t_client *initClient(t_core *core, int socket)
+{
+  t_client *client;
+  t_list *node;
+
+  if ((client = malloc(sizeof(t_client))) != NULL)
+    {
+      if ((client->name = malloc(sizeof(char) * 6)) != NULL)
+	{
+	  clientName(core, client, 5);
+	  client->socket = socket;
+	  client->power = -1;
+	  client->action = -1;
+	  node = my_add_list(&core->queue);
+	  node->data = client;
+	  return (client);
+	}
+    }
+  return (NULL);
+}
+
 void *connectionHandler(void *base)
 {
   t_clientSocket *arg;
   int read_size;
   char client_message[2000];
-  //t_core *core;
+  t_core *core;
   int sock;
+  t_client *client;
 
   arg = (t_clientSocket*)base;
-  //core = arg->core;
+  core = arg->core;
   sock = arg->socket;
-  
-  write(sock, "ping\n", 5);
-  while ((read_size = read(sock, client_message, 2000)) > 0)
+
+  if ((client = initClient(core, sock)) != NULL)
     {
-      client_message[read_size] = '\0';
-      my_putstr(client_message);
-      write(sock, client_message, strlen(client_message));
+      write(sock, "ping\n", 5);
+      while ((read_size = read(sock, client_message, 2000)) > 0)
+	{
+	  client_message[read_size] = '\0';
+	  my_putstr(client_message);
+	  write(sock, client_message, strlen(client_message));
+	}
+      
+      if(read_size == 0)
+	{
+	  put(core, "Client ");
+	  put(core, client->name);
+	  put(core, " disconnected\n");
+	}
+      else if(read_size == -1)
+	{
+	  error(core, "read failed\n");
+	}
     }
 
-  if(read_size == 0)
-    {
-      my_putstr("Client disconnected\n");
-    }
-  else if(read_size == -1)
-    {
-      my_putstr("recv failed\n");
-    }
-
+  put(core, client->name);
+  if (clientDisconnect(core, client->name))
+    put(core, ((core->game)->stat == 2) ? " has been removed from lobby\n" : " has been removed from active game\n");
+  else
+    put(core, " not found is lobby or active game\n");
   close(sock);
   return 0;
 }

@@ -15,14 +15,16 @@ t_core *initCore(int argc, char **argv)
   if ((core = malloc(sizeof(t_core))) == NULL)
     return (NULL);
   core->running = 1;
-  core->cycle = (getParam(argc, argv, "--cycle")) ? my_getnbr(getParam(argc, argv, "--cycle")) : 500000;
-  core->debug = (getParam(argc, argv, "-v")) ? 1 : 0;
+  core->cycle = ((getParam(argc, argv, "--cycle")) ? my_getnbr(getParam(argc, argv, "--cycle")) : 500000) * 1000;
+  core->debug = (getParam(argc, argv, "-v") != NULL) ? 1 : 0;
   core->logPath = (getParam(argc, argv, "--log")) ? getParam(argc, argv, "--log") : "softwar.log";
-  core->size = (getParam(argc, argv, "--size")) ? my_getnbr(getParam(argc, argv, "--size")) : 8;
+  core->size = (getParam(argc, argv, "--size")) ? my_getnbr(getParam(argc, argv, "--size")) : 10;      
+  core->countdown = (getParam(argc, argv, "--countdown")) ? my_getnbr(getParam(argc, argv, "--countdown")) : 10;
+  core->powerDrain = (getParam(argc, argv, "--power")) ? my_getnbr(getParam(argc, argv, "--power")) : 2;
+  core->queue = NULL;
   if (initLogs(core) < 0)
     return (NULL);
-  initGameMap(core);
-  initGameCycle(core);
+  initGame(core);
   return (core);
 }
 
@@ -64,6 +66,7 @@ int main(int argc, char **argv)
   t_core *core;
   struct sockaddr_in servaddr;
   
+  srand(time(NULL));
   if (getParam(argc, argv, "--port") && (core = initCore(argc, argv)) != NULL)
     {
       if ((core->sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)

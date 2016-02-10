@@ -32,6 +32,22 @@ typedef struct s_list
   struct s_list *next;
 } t_list;
 
+typedef struct s_client
+{
+  char *name;
+  int socket;
+  int power;
+  int action;
+} t_client;
+
+typedef struct s_game
+{
+  t_client *players[4];
+  int maxPlayer;
+  int stat;
+  int countdown;
+} t_game;
+
 typedef struct s_core
 {
   int sockfd;
@@ -40,7 +56,11 @@ typedef struct s_core
   int debug;
   char *logPath;
   int size;
+  int countdown;
   int logHandle;
+  int powerDrain;
+  t_game *game;
+  t_list *queue;
 } t_core;
 
 typedef struct s_clientSocket
@@ -60,23 +80,31 @@ char *my_strncpy(char *dest, char *src, int n);
 char **my_str_to_wordtab(char *str);
 int my_getnbr(char *str);
 char *my_strcat(char *str1, char *str2);
+
 void my_sort_list(t_list **begin, int (*cmp)());
 t_list *my_add_list(t_list **begin);
 void my_remove_list(t_list **begin, void *data_ref, int (*cmp)());
 void *my_find_list(t_list *begin, void *data_ref, int (*cmp)());
+void my_add_list_to_list(t_list **begin1,t_list *begin2);
+
+char *my_strstr(char *str, char *to_find);
+char *my_strcpy(char *dest, char *src);
 
 void my_memset(void *buff, int put, size_t size);
 char *getParam(int argc, char **argv, char *param);
 
 void *connectionHandler(void *arg);
+int cmpClientName(t_client *node, char *str);
 
 int initLogs(t_core *core);
 void closeLogs(t_core *core);
 int error(t_core *core, char *str);
 int put(t_core *core, char *str);
+int putnbr(t_core *core, int n);
 
-void initGameMap(t_core *core);
+void initGame(t_core *core);
 void initGameCycle(t_core *core);
+int clientDisconnect(t_core *core, char *name);
 void *cycleRun(void *base);
 
 #endif

@@ -2,7 +2,8 @@ SRC =	main.c \
 	core/util.c \
 	core/client.c \
 	core/game.c \
-	core/log.c
+	core/log.c \
+	core/list.c
 
 NAME =	softwars
 OBJO =	$(SRC:%.c=%.o)
