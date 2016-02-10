@@ -96,7 +96,7 @@ void my_memset(void *buff, int put, size_t size);
 char *getParam(int argc, char **argv, char *param);
 
 void sendAll(t_core *core, char *action, char *data);
-void sendAction(int socket, char *action, char *data);
+void sendAction(t_core *core, int socket, char *action, char *data);
 void *connectionHandler(void *arg);
 int cmpClientName(t_client *node, char *str);
 

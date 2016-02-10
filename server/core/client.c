@@ -58,12 +58,12 @@ void sendAll(t_core *core, char *action, char *data)
   while (i < game->maxPlayer)
     {
       if (game->players[i] != NULL)
-	sendAction((game->players[i])->socket, action, data);
+	sendAction(core, (game->players[i])->socket, action, data);
       i += 1;
     }
 }
 
-void sendAction(int socket, char *action, char *data)
+void sendAction(t_core *core, int socket, char *action, char *data)
 {
   int l;
   char *send;
@@ -75,7 +75,12 @@ void sendAction(int socket, char *action, char *data)
       my_strcat(send, action);
       my_strcat(send, ";");
       my_strcat(send, data);
-      my_strcat(send, ";\0");
+      my_strcat(send, ",\0");
+      put(core, "packet: ");
+      put(core, send);
+      put(core, " to ");
+      put(core, my_nbrtostr(socket));
+      put(core, "\n");
       write(socket, send, l - 1);
       free(send);
     }

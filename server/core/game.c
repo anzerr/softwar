@@ -126,12 +126,12 @@ void startGame(t_core *core)
 	      c += 1;
 	      client->action = 2;
 	      client->power = client->power - core->powerDrain;
-	      sendAction(client->socket, "powerchange", my_nbrtostr(client->power));
+	      sendAction(core, client->socket, "powerchange", my_nbrtostr(client->power));
 	      if (client->power <= 0)
 		{
 		  c += -1;
 		  sendAll(core, "dead", (game->players[i])->name);
-		  sendAction(client->socket, "lost", "NULL");
+		  sendAction(core, client->socket, "lost", "NULL");
 		  game->players[i] = NULL;
 		  put(core, client->name);
 		  put(core, " has died put back into queue\n");
@@ -155,7 +155,7 @@ void startGame(t_core *core)
 	    }
 	  else
 	    {
-	      sendAction((game->players[last])->socket, "win", (game->players[last])->name);
+	      sendAction(core, (game->players[last])->socket, "win", (game->players[last])->name);
 	      put(core, (game->players[last])->name);
 	      put(core, " is the winner.\n");
 	    }

@@ -39,7 +39,5 @@ char *my_nbrtostr(int n)
       pow = pow / 10;
     }
   str[l - 1] = '\0';
-  my_putstr(str);
-  my_putstr("\n");
   return (str);
 }
