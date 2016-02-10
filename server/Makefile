@@ -1,5 +1,8 @@
 SRC =	main.c \
-	core/util.c
+	core/util.c \
+	core/client.c \
+	core/game.c \
+	core/log.c
 
 NAME =	softwars
 OBJO =	$(SRC:%.c=%.o)
@@ -9,7 +12,7 @@ CFLAGS = -W -Werror -Wall
 all:	$(NAME)
 
 $(NAME):	$(OBJO)
-	gcc -W -Werror -Wall $(OBJO) -o $(NAME) -L. -lmy
+	gcc -W -Werror -Wall $(OBJO) -o $(NAME) -L. -lmy -pthread
 
 clean:
 	rm -f $(OBJO)
